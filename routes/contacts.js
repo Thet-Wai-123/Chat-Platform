@@ -21,38 +21,75 @@ router.get(
   })
 );
 
+//get all friend request that were sent to you
 router.get(
-  '/friend_requests',
+  '/friend_requests/inbox/GET',
   asyncHandler(async (req, res, next) => {
     const myId = req.body.id;
-
-    // res.json(allFriendRequests)
+    const friendRequests = await db.query(
+      `
+    SELECT users.name, friend_requests.status
+    FROM friend_requests
+    INNER JOIN users ON friend_requests.sender_id = users.id
+    WHERE receiver_id=$1`,
+      [myId]
+    );
+    res.json(friendRequests.rows);
   })
 );
 
-router.post(
-  '/friend_request/SEND/:targetId',
+//get all friend requests you send to others
+router.get(
+  '/friend_requests/inbox/SENT',
   asyncHandler(async (req, res, next) => {
-    res.json('Hello There');
+    const myId = req.body.id;
+    const friendRequests = await db.query(
+      `
+    SELECT users.name, friend_requests.status 
+    FROM friend_requests
+    INNER JOIN users ON friend_requests.receiver_id = users.id
+    WHERE sender_id=$1`,
+      [myId]
+    );
+    res.json(friendRequests.rows);
   })
 );
 
 router.post(
-  '/friend_request/ACCEPT/:targetId',
+  '/friend_requests/inbox/SEND/:targetId',
+  asyncHandler(async (req, res, next) => {
+    const myId = req.body.id;
+    const targetId = req.params.targetId;
+    const response = await db.query(`INSERT INTO friend_requests (sender_id, receiver_id) VALUES( $1, $2)`, [myId, targetId]);
+    if (response.rowCount == 0) {
+      res.json('Error sending a friend request');
+    } else {
+      res.json('Friend request sent Successfully');
+    }
+
+  })
+);
+
+router.post(
+  '/friend_requests/inbox/ACCEPT/:targetId',
   asyncHandler(async (req, res, next) => {
     const myId = req.body.id;
     const friendId = req.params.targetId;
     //implement verifying if the friend request is actually send here!!! you dont' wanna be allowing anyone to make any friends
-
-    const response = await db.query(
-      'INSERT INTO friends (from_user, to_user) VALUES($1, $2), ($2,$1)',
-      [myId, friendId]
-    );
-    if (response.rowCount == 0) {
-      res.json('Error sending a message');
-    } else {
+    let response2;
+    //not sure how to test if this fails or not- doing a const response = this promise return undefined??
+    await Promise.all[
+      (
+        db.query(`
+        DELETE FROM friend_requests 
+        WHERE receiver_id=$1 AND sender_id=$2
+        `, [myId, friendId]),
+        response2 = db.query(
+        'INSERT INTO friends (from_user, to_user) VALUES($1, $2), ($2,$1)',
+        [myId, friendId]
+      ))
+    ];
       res.json('Success');
-    }
   })
 );
 //Get chat log

@@ -4,9 +4,11 @@ const db = require('../db');
 const LocalStrategy = require('passport-local').Strategy;
 
 const passportJWT = require('passport-jwt');
+const { compareHash } = require('./bcrypt.js');
 const JWTStrategy = passportJWT.Strategy;
 const ExtractJWT = passportJWT.ExtractJwt;
 require('dotenv').config();
+require('./bcrypt.js');
 
 //Local Strategy- checking user credentials are correct
 passport.use(
@@ -16,16 +18,18 @@ passport.use(
       passwordField: 'password',
     },
     async function (name, password, done) {
-      const { rows } = await db.query(
-        'SELECT * FROM users WHERE name = $1 AND password = $2',
-        [name, password]
-      );
-      const user = rows[0];
-
-      if (!user) {
+      const { rows } = await db.query('SELECT * FROM users WHERE name = $1', [
+        name,
+      ]);
+      const hashedPass = rows[0].password;
+      const result = await compareHash(password, hashedPass);
+      if (!result) {
         return done(null, false, { message: 'Invalid Credientials' });
+      } else {
+        //don't want to pass in the password along as well
+        delete rows[0].password;
+        return done(null, rows[0], { message: 'Logged In Successfully' });
       }
-      return done(null, user, { message: 'Logged In Successfully' });
     }
   )
 );

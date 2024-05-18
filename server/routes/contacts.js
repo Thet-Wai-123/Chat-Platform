@@ -8,8 +8,7 @@ const db = require('../db');
 router.get(
   '/friends',
   asyncHandler(async (req, res, next) => {
-    const myId = req.body.myId;
-    console.log(myId)
+    const myId = req.user.id;
     const friends = await db.query(
       `SELECT friends.from_user, friends.to_user, name 
       FROM friends 
@@ -25,7 +24,7 @@ router.get(
 router.get(
   '/friend_requests/inbox/GET',
   asyncHandler(async (req, res, next) => {
-    const myId = req.params.myId;
+    const myId = req.user.id;
     const friendRequests = await db.query(
       `
     SELECT users.name, friend_requests.status
@@ -42,7 +41,7 @@ router.get(
 router.get(
   'friend_requests/inbox/SENT',
   asyncHandler(async (req, res, next) => {
-    const myId = req.params.myId;
+    const myId = req.user.id;
     const friendRequests = await db.query(
       `
     SELECT users.name, friend_requests.status 
@@ -58,7 +57,7 @@ router.get(
 router.post(
   '/friend_requests/inbox/SEND/:targetId',
   asyncHandler(async (req, res, next) => {
-    const myId = req.params.myId;
+    const myId = req.user.id;
     const targetId = req.params.targetId;
     const response = await db.query(`INSERT INTO friend_requests (sender_id, receiver_id) VALUES( $1, $2)`, [myId, targetId]);
     if (response.rowCount == 0) {
@@ -73,7 +72,7 @@ router.post(
 router.post(
   '/friend_requests/inbox/ACCEPT/:targetId',
   asyncHandler(async (req, res, next) => {
-    const myId = req.params.myId;
+    const myId = req.user.id;
     const friendId = req.params.targetId;
     //implement verifying if the friend request is actually send here!!! you dont' wanna be allowing anyone to make any friends
     let response2;
@@ -96,7 +95,7 @@ router.post(
 router.get(
   '/:targetId/chat',
   asyncHandler(async (req, res, next) => {
-    const myId = req.params.myId;
+    const myId = req.user.id;
     const chatLog = await db.query(
       `SELECT 
         posts.content, 
@@ -130,7 +129,7 @@ router.get(
 router.post(
   '/:targetId/chat',
   asyncHandler(async (req, res, next) => {
-    const myId = req.params.myId;
+    const myId = req.user.id;
     const content = req.body.content;
     const targetId = req.params.targetId;
     const time = new Date();

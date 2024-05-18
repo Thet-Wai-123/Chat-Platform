@@ -5,7 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 var homeRouter = require('./routes/home');
-var contactRouter = require('./routes/contacts');
+var contactRouter = require('./routes/contacts')
 var app = express();
 var cors = require('cors')
 
@@ -19,7 +19,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', homeRouter);
+const passport = require('./authentication/passport.js');
+
 
 // Enable CORS with options
 app.use(
@@ -28,7 +29,8 @@ app.use(
   })
 );
 
-app.use('/contacts', contactRouter);
+app.use('/', homeRouter);
+app.use('/contacts', passport.authenticate('jwt', {session: false}),contactRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -45,5 +47,6 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
 
 module.exports = app;

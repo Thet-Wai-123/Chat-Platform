@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat</title>
+    <style>
+      #messageLog {
+        height: 300px;
+        overflow-y: scroll;
+      }
+      #messageInput {
+        width: 100%;
+      }
+    </style>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script defer src="runtime.bundle.js"></script><script defer src="chat.bundle.js"></script></head>
+  <body>
+    <h1>Chat</h1>
+
+    <div id="messageLog"></div>
+
+    <div>
+      <input type="text" id="messageInput" placeholder="Type your message..." />
+      <button id="sendButton">Send</button>
+    </div>
+    <script>
+      // const socket = io("http://localhost:5501");
+    </script>
+    <!-- <script type="module" src="./chat.js"></script> -->
+  </body>
+</html>

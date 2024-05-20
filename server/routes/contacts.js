@@ -4,6 +4,8 @@ const { body, validationResult } = require('express-validator');
 const asyncHandler = require('express-async-handler');
 const db = require('../db');
 
+
+
 //get all friends of the logged in person
 router.get(
   '/friends',

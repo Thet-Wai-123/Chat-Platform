@@ -9,6 +9,7 @@ require('../authentication/bcrypt.js');
 const db = require('../db.js');
 const { generateHash } = require('../authentication/bcrypt.js');
 require('../authentication/bcrypt.js');
+require('socket.io')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -46,13 +47,6 @@ router.post(
     }
   })
 );
-
-function removePassword(req, res, next) {
-  if (req.user) {
-    delete req.user.password;
-  }
-  next();
-}
 
 router.post(
   '/log-in',

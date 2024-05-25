@@ -21,11 +21,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const passport = require('./authentication/passport.js');
 
+require('./socket.js')
 
 // Enable CORS with options
 app.use(
   cors({
-    origin: 'http://127.0.0.1:5501', // Allow requests from this origin
+    // origin: 'http://localhost:8080', // Allow requests from this origin
+    origin: '*'
   })
 );
 

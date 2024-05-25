@@ -23,33 +23,11 @@ io.use((socket, next) => {
 
 io.on('connection', (socket) => {
   socket.join(socket.user.id);
-  console.log(socket.user.id);
-  socket.on('send-message', (targetId) => {
-    console.log(targetId);
-    var clients = io.sockets.adapter.rooms.get(targetId);
-    console.log(clients);
-    socket.to(targetId).emit('receive-message');
+  socket.on('send-message', (targetId, message) => {
+    var sendByName = socket.user.name;
+    var sendTime = new Date();
+    //emit receive-message to BOTH the sender and receiver
+    socket.emit('receive-message', {message, sendByName, sendTime});
+    socket.to(targetId).emit('receive-message', {message, sendByName, sendTime});
   });
 });
-
-// io.on('connection', (socket) => {
-//   if (socket == null) {
-//     document.write('Sorry, there seems to be an issue with the connection!');
-//   } else {
-//     passport.authenticate('jwt', {session: false}), (err, jwtPayload)=>{
-//       console.log(jwtPayload.user);
-//     };
-//     console.log(socket.request._query['token'])
-//     // socket.join("")
-//     socket.on('send-message', (room) => {
-//       if ((room = '')) {
-//         document.write(
-//           'Sorry, there seems to be an issue with sending message!'
-//         );
-//       } else{
-//         console.log(room)
-//         socket.to(room).emit("receive-message")
-//       }
-//     });
-//   }
-// });

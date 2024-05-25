@@ -11,26 +11,20 @@ if (!token) {
 //set up socket and pass in the token so that the user may join a room with its own id
 const socket = io('http://localhost:50000', {
   auth: {
-    token: `${token}`
-  }
-}
-);
+    token: `${token}`,
+  },
+});
 
-socket.on('receive-message', async (room) => {
-  const chatLog = await fetchChatLog(token);
-  const newestMessage = chatLog[chatLog.length - 1];
-  addReceivedMessage(
-    newestMessage.content,
-    newestMessage.postedbyname,
-    newestMessage.postedtime
-  );
+socket.on('receive-message', async (newMessageInfo) => {
+  const { message, sendByName, sendTime } = newMessageInfo;
+  addNewMessageToScreen(message, sendByName, sendTime);
 });
 
 document.addEventListener('DOMContentLoaded', async function () {
   // Fetch chat log from backend
   const chatLog = await fetchChatLog();
   chatLog.forEach((message) => {
-    addReceivedMessage(
+    addNewMessageToScreen(
       message.content,
       message.postedbyname,
       message.postedtime
@@ -63,9 +57,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 
           // Clear input box
           messageInput.value = '';
-
           //update message live
-          socket.emit('send-message', friendId);
+          var INTfriendId = Number(friendId); //needed to pass in as an INT cause socket differs between string and int
+          socket.emit('send-message', INTfriendId, message);
         } else {
           // Handle error posting message
           console.error('Error posting message:', sendMessageResult);
@@ -77,13 +71,15 @@ document.addEventListener('DOMContentLoaded', async function () {
   });
 });
 
-// Function to add received messages to the message log
-function addReceivedMessage(content, postedBy, postedtime) {
+// Function to add new messages to the message log
+function addNewMessageToScreen(content, postedBy, postedtime) {
+  const formattedTime = formatTime(postedtime)
   const messageElement = document.createElement('div');
-  messageElement.textContent = `${postedBy}: ${content} \br ${postedtime}`;
+  messageElement.textContent = `${postedBy}: ${content} ${formattedTime}`;
   messageLog.appendChild(messageElement);
   messageLog.scrollTop = messageLog.scrollHeight;
 }
+
 async function fetchChatLog() {
   const response = await fetch(
     `http://localhost:3000/contacts/${friendId}/chat`,
@@ -96,4 +92,13 @@ async function fetchChatLog() {
   );
   const chatLog = await response.json();
   return chatLog;
+}
+
+function formatTime(timestamp) {
+  const date = new Date(timestamp);
+  return new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'short',
+    timeStyle: 'medium',
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, //depending on your OS timezone
+  }).format(date);
 }

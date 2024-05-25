@@ -13,18 +13,20 @@
         width: 100%;
       }
     </style>
-  </head>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script defer src="runtime.bundle.js"></script><script defer src="chat.bundle.js"></script></head>
   <body>
     <h1>Chat</h1>
 
-    <div id="messageLog">
-    </div>
+    <div id="messageLog"></div>
 
     <div>
       <input type="text" id="messageInput" placeholder="Type your message..." />
       <button id="sendButton">Send</button>
     </div>
-
-    <script src="chat.js"></script>
+    <script>
+      // const socket = io("http://localhost:5501");
+    </script>
+    <!-- <script type="module" src="./chat.js"></script> -->
   </body>
 </html>

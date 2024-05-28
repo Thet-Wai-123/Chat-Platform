@@ -87,7 +87,7 @@ router.post(
   asyncHandler(async (req, res, next) => {
     const targetName = req.params.targetName;
     const target = await db.query(`SELECT id FROM users WHERE name=$1`, [
-      targetName
+      targetName,
     ]);
     if (target.rowCount == 0) {
       res.json('User not found');
@@ -98,7 +98,7 @@ router.post(
     // await Promise.all([
     //   (db.query(
     //     `
-    //     DELETE FROM friend_requests 
+    //     DELETE FROM friend_requests
     //     WHERE receiver_id=$1 AND sender_id=$2
     //     `,
     //     [myId, friendId]
@@ -112,17 +112,17 @@ router.post(
     //   next(err); // some coding error in handling happened
     // })
     await db.query(
-          'INSERT INTO friends (from_user, to_user) VALUES($1, $2), ($2,$1)',
-          [myId, friendId]
-        )
+      'INSERT INTO friends (from_user, to_user) VALUES($1, $2), ($2,$1)',
+      [myId, friendId]
+    );
     //once adding to friends is successfuly, delete the friend request
     await db.query(
-          `
+      `
           DELETE FROM friend_requests 
           WHERE receiver_id=$1 AND sender_id=$2
           `,
-          [myId, friendId]
-        );
+      [myId, friendId]
+    );
     res.json('Success');
   })
 );
@@ -168,13 +168,48 @@ router.post(
     const content = req.body.content;
     const targetId = req.params.targetId;
     const time = new Date();
-    const response = await db.query(
+    await db.query(
       'INSERT INTO posts (content, postedBy, postedTo, postedTime) VALUES ($1,$2,$3,$4)',
       [content, myId, targetId, time]
     );
-      res.json('Posted Successfully');
+    res.json('Posted Successfully');
   })
 );
 
+//create new group
+router.post(
+  '/group/create',
+  asyncHandler(async (req, res, next) => {
+    const groupName = req.body.groupName;
+    const groupCreationResponse = await db.query(
+      `INSERT INTO groups (name) VALUES ($1) RETURNING id`,
+      [groupName]
+    );
+    console.log(groupCreationResponse)
+    const groupId = groupCreationResponse.rows[0].id;
+    const myId = req.user.id;
+    await db.query(
+      `INSERT INTO usersXgroups (user_id, group_id) VALUES ($1, $2)`,
+      [myId, groupId]
+    );
+    res.json('Success');
+  })
+);
+
+router.get(
+  '/group/get',
+  asyncHandler(async (req, res, next) => {
+    //do join
+    await db.query(`SELECT groups.id, groups.name FROM usersXgroups WHERE `);
+  })
+);
+
+router.post('group/:groupId/add/:userId');
+
+//get the groupchat log
+router.get('group/:groupId/chat');
+
+//post something to the groupchat
+router.post('group/:groupId/chat');
 
 module.exports = router;

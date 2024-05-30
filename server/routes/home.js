@@ -5,6 +5,7 @@ const asyncHandler = require('express-async-handler');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const passport = require('../authentication/passport.js');
+const createError = require('http-errors');
 require('../authentication/bcrypt.js');
 const db = require('../db.js');
 const { generateHash } = require('../authentication/bcrypt.js');
@@ -41,7 +42,6 @@ router.post(
       `INSERT INTO users(name, password, email) VALUES ($1, $2, $3)`,
       [req.body.name, hashedPass, req.body.email]
     );
-    console.log(result.rowCount);
     if (result.rowCount === 1) {
       res.json('success in creating new account');
     }

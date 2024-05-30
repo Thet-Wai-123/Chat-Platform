@@ -1,8 +1,8 @@
 var express = require('express');
 var router = express.Router();
-const { body, validationResult } = require('express-validator');
 const asyncHandler = require('express-async-handler');
 const db = require('../db');
+const createError = require('http-errors');
 
 //get all friends of the logged in person
 router.get(
@@ -10,15 +10,12 @@ router.get(
   asyncHandler(async (req, res, next) => {
     const myId = req.user.id;
     const friends = await db.query(
-      `SELECT friends.from_user, friends.to_user, name 
+      `SELECT friends.from_user, friends.to_user, name AS friend_name 
       FROM friends
       LEFT JOIN users ON friends.to_user = users.id 
       WHERE from_user=$1`,
       [myId]
     );
-    if (!friends.rows) {
-      next('Something goes wrong');
-    }
     res.json(friends.rows);
   })
 );
@@ -42,7 +39,7 @@ router.get(
 
 //get all friend requests you send to others
 router.get(
-  'friend_requests/inbox/SENT',
+  '/friend_requests/inbox/SENT',
   asyncHandler(async (req, res, next) => {
     const myId = req.user.id;
     const friendRequests = await db.query(
@@ -57,22 +54,26 @@ router.get(
   })
 );
 
-//send friend request to a target by name
+//send friend request to a target
 router.post(
-  '/friend_requests/inbox/SEND/:targetName', //an alernative is to pass in the id earlier and use id instead of name
+  '/friend_requests/inbox/SEND/:targetName',
   asyncHandler(async (req, res, next) => {
     const targetName = req.params.targetName;
-
     const myId = req.user.id;
     const target = await db.query(`SELECT id FROM users WHERE name=$1`, [
       targetName,
     ]);
-    if (target.rowCount == 0) {
-      res.json('User not found');
-      return;
+    if (target.rowCount === 0) {
+      return res.status(404).json('User not found');
     }
     const targetId = target.rows[0].id;
-    //exception is handled by asyncHandler
+    const alreadyFriend = await db.query(
+      `SELECT * FROM friends WHERE from_user=$1 AND to_user=$2`,
+      [myId, targetId]
+    );
+    if (alreadyFriend) {
+      return res.json('Failed request, already friends');
+    }
     await db.query(
       `INSERT INTO friend_requests (sender_id, receiver_id) VALUES( $1, $2)`,
       [myId, targetId]
@@ -83,34 +84,10 @@ router.post(
 
 //accept a friend request
 router.post(
-  '/friend_requests/inbox/ACCEPT/:targetName',
+  '/friend_requests/inbox/ACCEPT/:targetId',
   asyncHandler(async (req, res, next) => {
-    const targetName = req.params.targetName;
-    const target = await db.query(`SELECT id FROM users WHERE name=$1`, [
-      targetName,
-    ]);
-    if (target.rowCount == 0) {
-      res.json('User not found');
-      return;
-    }
-    const friendId = target.rows[0].id;
+    const friendId = req.params.targetId;
     const myId = req.user.id;
-    // await Promise.all([
-    //   (db.query(
-    //     `
-    //     DELETE FROM friend_requests
-    //     WHERE receiver_id=$1 AND sender_id=$2
-    //     `,
-    //     [myId, friendId]
-    //   ),
-    //   db.query(
-    //     'INSERT INTO friends (from_user, to_user) VALUES($1, $2), ($2,$1)',
-    //     [myId, friendId]
-    //   ))
-    // ]).catch(function(err) {
-    //   console.log("Error is called")
-    //   next(err); // some coding error in handling happened
-    // })
     await db.query(
       'INSERT INTO friends (from_user, to_user) VALUES($1, $2), ($2,$1)',
       [myId, friendId]
@@ -185,7 +162,6 @@ router.post(
       `INSERT INTO groups (name) VALUES ($1) RETURNING id`,
       [groupName]
     );
-    console.log(groupCreationResponse)
     const groupId = groupCreationResponse.rows[0].id;
     const myId = req.user.id;
     await db.query(
@@ -199,17 +175,77 @@ router.post(
 router.get(
   '/group/get',
   asyncHandler(async (req, res, next) => {
-    //do join
-    await db.query(`SELECT groups.id, groups.name FROM usersXgroups WHERE `);
+    const myId = req.user.id;
+    const response = await db.query(
+      `SELECT users.name AS user_name, user_id, groups.name AS group_name, group_id 
+      FROM usersxgroups 
+      LEFT JOIN groups ON group_id=groups.id 
+      LEFT JOIN users ON user_id=users.id
+      WHERE user_id = $1`,
+      [myId]
+    );
+    res.json(response.rows);
   })
 );
 
-router.post('group/:groupId/add/:userId');
+router.post(
+  '/group/:groupId/addUsers',
+  asyncHandler(async (req, res, next) => {
+    const myId = req.user.id;
+    const groupId = req.params.groupId;
+    const checkPermission = await db.query(`SELECT * FROM usersXgroups WHERE group_id=$1 AND user_id=$2`, [groupId, myId]);
+    if (checkPermission.rowCount === 0 || !checkPermission.rows){
+      return next(createError(404, 'User is not in the group'));
+    }
+    const usersToAdd = req.body.usersToAdd;
+    try {
+      await Promise.all(
+        usersToAdd.map((userId) =>
+          db.query(
+            `INSERT INTO usersXgroups (user_id, group_id) VALUES ($1, $2)`,
+            [userId, groupId]
+          )
+        )
+      );
+      res.json({ message: 'Successfully added users to group' });
+    } catch (err) {
+      next(err);
+    }
+    res.json('Successfully added users to group');
+  })
+);
 
 //get the groupchat log
-router.get('group/:groupId/chat');
+router.get(
+  '/group/:groupId/chat',
+  asyncHandler(async (req, res, next) => {
+    const chatLog = await db.query(
+      `SELECT * FROM group_posts WHERE groupId = $1`,
+      [req.params.groupId]
+    );
+    res.json(chatLog.rows);
+  })
+);
 
 //post something to the groupchat
-router.post('group/:groupId/chat');
+router.post(
+  '/group/:groupId/chat',
+  asyncHandler(async (req, res, next) => {
+    const groupId = req.params.groupId;
+    const myId = req.user.id;
+    const checkPermission = await db.query(`SELECT * FROM usersXgroups WHERE group_id=$1 AND user_id=$2`, [groupId, myId]);
+    if (checkPermission.rowCount === 0 || !checkPermission.rows){
+      return next(createError(404, 'User is not in the group'));
+    }
+    const content = req.body.content;
+    const postedBy = req.user.id;
+    const postedTime = new Date();
+    await db.query(
+      `INSERT INTO group_posts (groupId, content, postedBy, postedTime) VALUES ($1, $2, $3, $4)`,
+      [groupId, content, postedBy, postedTime]
+    );
+    res.json('Success');
+  })
+);
 
 module.exports = router;

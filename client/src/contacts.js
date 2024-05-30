@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   const friendsListContainer = document.getElementById('friendsList');
   friends.forEach((friend) => {
     const friendElement = document.createElement('button');
-    friendElement.textContent = `${friend.name}`;
+    friendElement.textContent = `${friend.friend_name}`;
     friendElement.addEventListener('click', () => {
       // Redirect to chat.html with friend's ID as a query parameter
       window.location.href = `chat.html?friendId=${friend.to_user}`;
@@ -39,17 +39,15 @@ document.addEventListener('DOMContentLoaded', async function () {
   friendRequests.forEach((friendRequest) => {
     const requestElement = document.createElement('div');
     requestElement.textContent = `${friendRequest.name}`;
-    console.log(friendRequest.id);
     const acceptButton = document.createElement('button');
     acceptButton.classList = "acceptRequestButton";
-    //so I need to somehow also pass in the target id here as well.
     acceptButton.textContent = 'Accept';
     friendRequestsList.appendChild(requestElement);
     friendRequestsList.appendChild(acceptButton);
 
     acceptButton.addEventListener('click', async () => {
               await fetch(
-                `http://localhost:3000/contacts/friend_requests/inbox/ACCEPT/${friendRequest.name}`,
+                `http://localhost:3000/contacts/friend_requests/inbox/ACCEPT/${friendRequest.sender_id}`,
                 {
                   method: 'POST',
                   headers: {
@@ -57,6 +55,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                   },
                 }
               );
+              window.location.reload();
             });
   });
 
@@ -80,20 +79,4 @@ document.addEventListener('DOMContentLoaded', async function () {
         console.log('Friend request failedd');
       }
     });
-
-
-//Needs to differentiate different users, coming back to it later
-//   document
-//     .getElementsByClassName('acceptRequestButton')[0]
-//     .addEventListener('click', async () => {
-//       const response = await fetch(
-//         `http://localhost:3000/contacts/friend_requests/inbox/ACCEPT/${friendRequest.name}`,
-//         {
-//           method: 'POST',
-//           headers: {
-//             Authorization: `Bearer ${token}`,
-//           },
-//         }
-//       );
-//     });
 });

@@ -20,7 +20,10 @@ passport.use(
     async function (name, password, done) {
       const { rows } = await db.query('SELECT * FROM users WHERE name = $1', [
         name,
-      ]);
+      ])
+      if (!Array.isArray(rows) || !rows.length){
+        return done(null, false, {message: 'Username is Invalid'})
+      }
       const hashedPass = rows[0].password;
       const result = await compareHash(password, hashedPass);
       if (!result) {

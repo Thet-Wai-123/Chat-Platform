@@ -173,7 +173,7 @@ router.post(
 );
 
 router.get(
-  '/group/get',
+  '/group/GET',
   asyncHandler(async (req, res, next) => {
     const myId = req.user.id;
     const response = await db.query(
@@ -189,28 +189,41 @@ router.get(
 );
 
 router.post(
-  '/group/:groupId/addUsers',
+  '/group/:groupId/addUser',
   asyncHandler(async (req, res, next) => {
     const myId = req.user.id;
     const groupId = req.params.groupId;
-    const checkPermission = await db.query(`SELECT * FROM usersXgroups WHERE group_id=$1 AND user_id=$2`, [groupId, myId]);
-    if (checkPermission.rowCount === 0 || !checkPermission.rows){
+    const checkPermission = await db.query(
+      `SELECT * FROM usersXgroups WHERE group_id=$1 AND user_id=$2`,
+      [groupId, myId]
+    );
+    if (checkPermission.rowCount === 0 || !checkPermission.rows) {
       return next(createError(404, 'User is not in the group'));
     }
-    const usersToAdd = req.body.usersToAdd;
-    try {
-      await Promise.all(
-        usersToAdd.map((userId) =>
-          db.query(
-            `INSERT INTO usersXgroups (user_id, group_id) VALUES ($1, $2)`,
-            [userId, groupId]
-          )
-        )
-      );
-      res.json({ message: 'Successfully added users to group' });
-    } catch (err) {
-      next(err);
+    //Another possible implementing of using checkboxes to add multiple users at the same time
+    // const usersToAdd = req.body.usersToAdd;
+    // try {
+    //   await Promise.all(
+    //     usersToAdd.map((userId) =>
+    //       db.query(
+    //         `INSERT INTO usersXgroups (user_id, group_id) VALUES ($1, $2)`,
+    //         [userId, groupId]
+    //       )
+    //     )
+    //   );
+    //   res.json({ message: 'Successfully added users to group' });
+    // } catch (err) {
+    //   next(err);
+    // }
+    const userToAdd = req.body.usersToAdd;
+    const userToAddId = await db.query(`SELECT id FROM users WHERE name=$1`, [userToAdd])
+    if (userToAddId.rowCount === 0){
+      return res.status(400).json("User not found")
     }
+    await db.query(
+      `INSERT INTO usersXgroups (user_id, group_id) VALUES ($1, $2)`,
+      [userToAddId.rows[0].id, groupId]
+    );
     res.json('Successfully added users to group');
   })
 );
@@ -220,7 +233,7 @@ router.get(
   '/group/:groupId/chat',
   asyncHandler(async (req, res, next) => {
     const chatLog = await db.query(
-      `SELECT * FROM group_posts WHERE groupId = $1`,
+      `SELECT content, users.name AS postedByname, postedTime FROM group_posts LEFT JOIN users ON group_posts.postedBy = users.id WHERE groupId = $1`,
       [req.params.groupId]
     );
     res.json(chatLog.rows);
@@ -233,8 +246,11 @@ router.post(
   asyncHandler(async (req, res, next) => {
     const groupId = req.params.groupId;
     const myId = req.user.id;
-    const checkPermission = await db.query(`SELECT * FROM usersXgroups WHERE group_id=$1 AND user_id=$2`, [groupId, myId]);
-    if (checkPermission.rowCount === 0 || !checkPermission.rows){
+    const checkPermission = await db.query(
+      `SELECT * FROM usersXgroups WHERE group_id=$1 AND user_id=$2`,
+      [groupId, myId]
+    );
+    if (checkPermission.rowCount === 0 || !checkPermission.rows) {
       return next(createError(404, 'User is not in the group'));
     }
     const content = req.body.content;

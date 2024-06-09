@@ -4,8 +4,9 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 module.exports = {
   entry: {
     authenticationPage: './src/authenticationPage.js',
-    chat: './src/chat.js',
-    contacts: './src/contacts.js'
+    friendChat: './src/friendChat.js',
+    contacts: './src/contacts.js',
+    groupChat: './src/groupChat.js'
   },
   output: {
     filename: '[name].bundle.js',
@@ -29,14 +30,19 @@ module.exports = {
       chunks: ['authenticationPage'],
     }),
     new HtmlWebpackPlugin({
-      filename: 'chat.html',
-      template: './src/chat.html',
-      chunks: ['chat'],
+      filename: 'friendChat.html',
+      template: './src/friendChat.html',
+      chunks: ['friendChat'],
     }),
     new HtmlWebpackPlugin({
       filename: 'contacts.html',
       template: './src/contacts.html',
       chunks: ['contacts'],
+    }),
+    new HtmlWebpackPlugin({
+      filename: 'groupChat.html',
+      template: './src/groupChat.html',
+      chunks: ['groupChat'],
     }),
   ],
   // importing css allowed

@@ -5,20 +5,27 @@ document.addEventListener('DOMContentLoaded', async function () {
   }
 
   //fetch friend and friend requests
-  var [friendsResponse, friendRequestsResponse] = await Promise.all([
-    fetch('http://localhost:3000/contacts/friends', {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }),
-    fetch('http://localhost:3000/contacts/friend_requests/inbox/GET', {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }),
-  ]);
+  var [friendsResponse, friendRequestsResponse, groupsResponse] =
+    await Promise.all([
+      fetch('http://localhost:3000/contacts/friends', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }),
+      fetch('http://localhost:3000/contacts/friend_requests/inbox/GET', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }),
+      fetch('http://localhost:3000/contacts/group/GET', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }),
+    ]);
 
   // Display the list of friends on the page
   const friends = await friendsResponse.json();
@@ -28,35 +35,35 @@ document.addEventListener('DOMContentLoaded', async function () {
     friendElement.textContent = `${friend.friend_name}`;
     friendElement.addEventListener('click', () => {
       // Redirect to chat.html with friend's ID as a query parameter
-      window.location.href = `chat.html?friendId=${friend.to_user}`;
+      window.location.href = `friendChat.html?friendId=${friend.to_user}`;
     });
     friendsListContainer.appendChild(friendElement);
   });
 
-  //Display list of friendRequests on the pag
+  //Display list of friendRequests on the page
   const friendRequests = await friendRequestsResponse.json();
   const friendRequestsList = document.getElementById('friendRequestsList');
   friendRequests.forEach((friendRequest) => {
     const requestElement = document.createElement('div');
     requestElement.textContent = `${friendRequest.name}`;
     const acceptButton = document.createElement('button');
-    acceptButton.classList = "acceptRequestButton";
+    acceptButton.classList = 'acceptRequestButton';
     acceptButton.textContent = 'Accept';
     friendRequestsList.appendChild(requestElement);
     friendRequestsList.appendChild(acceptButton);
 
     acceptButton.addEventListener('click', async () => {
-              await fetch(
-                `http://localhost:3000/contacts/friend_requests/inbox/ACCEPT/${friendRequest.sender_id}`,
-                {
-                  method: 'POST',
-                  headers: {
-                    Authorization: `Bearer ${token}`,
-                  },
-                }
-              );
-              window.location.reload();
-            });
+      await fetch(
+        `http://localhost:3000/contacts/friend_requests/inbox/ACCEPT/${friendRequest.sender_id}`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      window.location.reload();
+    });
   });
 
   document
@@ -79,4 +86,18 @@ document.addEventListener('DOMContentLoaded', async function () {
         console.log('Friend request failedd');
       }
     });
+
+  //set up group chats
+  const groups = await groupsResponse.json();
+  const groupsListContainer = document.getElementById('groupsList');
+  groups.forEach((group) => {
+    const groupElement = document.createElement('button');
+    groupElement.textContent = `${group.group_name}`;
+    groupElement.addEventListener('click', () => {
+      // Redirect to chat.html with friend's ID as a query parameter
+      window.location.href = `groupChat.html?groupId=${group.group_id}`;
+    });
+    groupsListContainer.appendChild(groupElement);
+  });
+
 });

@@ -27,7 +27,7 @@ router.post(
     .trim()
     .isLength({ min: 3 })
     .escape(),
-  body('email', 'Passwords must be at least 3 characters')
+  body('email', 'Gmail must be at least 3 characters')
     .trim()
     .isLength({ min: 3 })
     .escape()
@@ -36,6 +36,10 @@ router.post(
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(401).json({ errors: errors.array() });
+    }
+    const checkDuplicateName = await db.query(`SELECT name FROM users WHERE name = $1`, [req.body.name])
+    if (checkDuplicateName.rowCount!=0){
+      return res.status(401).json({errors: [{msg :"Username is already in use"}]})
     }
     const hashedPass = await generateHash(req.body.password);
     const result = await db.query(

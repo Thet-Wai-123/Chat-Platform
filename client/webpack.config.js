@@ -4,6 +4,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 module.exports = {
   entry: {
     authenticationPage: './src/authenticationPage.js',
+    signUpPage: './src/sign-up.js',
     friendChat: './src/friendChat.js',
     contacts: './src/contacts.js',
     groupChat: './src/groupChat.js'
@@ -28,6 +29,11 @@ module.exports = {
       filename: 'login.html',
       template: './src/login.html',
       chunks: ['authenticationPage'],
+    }),
+    new HtmlWebpackPlugin({
+      filename: 'sign-up.html',
+      template: './src/sign-up.html',
+      chunks: ['signUpPage'],
     }),
     new HtmlWebpackPlugin({
       filename: 'friendChat.html',

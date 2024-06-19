@@ -11,7 +11,7 @@ export function initializeSocket(token, groupId) {
     options.query = { groupId: `${groupId}` };
   }
 
-  return io('http://localhost:50000', options);
+  return io('https://chat-platform-irz7.onrender.com', options);
 }
 
 export function setupSocketListeners(socket, addNewMessageToScreen) {

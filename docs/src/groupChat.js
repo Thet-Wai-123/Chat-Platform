@@ -26,7 +26,7 @@ setupSocketListeners(socket, (message, sendByName, sendTime) =>
 
 document.addEventListener('DOMContentLoaded', async function () {
   const chatLog = await fetchChatLog(
-    `http://localhost:3000/contacts/group/${groupId}/chat`,
+    `https://chat-platform-irz7.onrender.com/contacts/group/${groupId}/chat`,
     token
   );
   chatLog.forEach((message) => {
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   sendButton.addEventListener('click', async () => {
     const message = messageInput.value.trim();
     if (message) {
-      await fetch(`http://localhost:3000/contacts/group/${groupId}/chat`, {
+      await fetch(`https://chat-platform-irz7.onrender.com/contacts/group/${groupId}/chat`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   addUserButton.addEventListener('click', async () => {
     const userToAdd = addUserInput.value.trim();
     if (userToAdd) {
-      const response = await fetch(`http://localhost:3000/contacts/group/${groupId}/addUser`, {
+      const response = await fetch(`https://chat-platform-irz7.onrender.com/contacts/group/${groupId}/addUser`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

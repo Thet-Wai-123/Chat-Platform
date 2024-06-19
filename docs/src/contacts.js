@@ -7,19 +7,19 @@ document.addEventListener('DOMContentLoaded', async function () {
   //fetch friend and friend requests
   var [friendsResponse, friendRequestsResponse, groupsResponse] =
     await Promise.all([
-      fetch('http://localhost:3000/contacts/friends', {
+      fetch('https://chat-platform-irz7.onrender.com/contacts/friends', {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
         },
       }),
-      fetch('http://localhost:3000/contacts/friend_requests/inbox/GET', {
+      fetch('https://chat-platform-irz7.onrender.com/contacts/friend_requests/inbox/GET', {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
         },
       }),
-      fetch('http://localhost:3000/contacts/group/GET', {
+      fetch('https://chat-platform-irz7.onrender.com/contacts/group/GET', {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     acceptButton.addEventListener('click', async () => {
       await fetch(
-        `http://localhost:3000/contacts/friend_requests/inbox/ACCEPT/${friendRequest.sender_id}`,
+        `https://chat-platform-irz7.onrender.com/contacts/friend_requests/inbox/ACCEPT/${friendRequest.sender_id}`,
         {
           method: 'POST',
           headers: {
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     .addEventListener('click', async () => {
       const newFriendInput = document.getElementById('newFriend').value;
       const response = await fetch(
-        `http://localhost:3000/contacts/friend_requests/inbox/SEND/${newFriendInput}`,
+        `https://chat-platform-irz7.onrender.com/contacts/friend_requests/inbox/SEND/${newFriendInput}`,
         {
           method: 'POST',
           headers: {

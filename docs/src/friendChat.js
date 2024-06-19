@@ -26,7 +26,7 @@ setupSocketListeners(socket, (message, sendByName, sendTime) =>
 
 document.addEventListener('DOMContentLoaded', async function () {
   const chatLog = await fetchChatLog(
-    `http://localhost:3000/contacts/${friendId}/chat`,
+    `https://chat-platform-irz7.onrender.com/contacts/${friendId}/chat`,
     token
   );
   chatLog.forEach((message) => {
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   sendButton.addEventListener('click', async () => {
     const message = messageInput.value.trim();
     if (message) {
-      await fetch(`http://localhost:3000/contacts/${friendId}/chat`, {
+      await fetch(`https://chat-platform-irz7.onrender.com/contacts/${friendId}/chat`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

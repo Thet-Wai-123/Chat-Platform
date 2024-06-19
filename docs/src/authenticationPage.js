@@ -8,7 +8,7 @@ document.getElementById('signInForm').addEventListener('submit', async (e) => {
   };
 
   try {
-    const response = await fetch('http://localhost:3000/log-in', {
+    const response = await fetch('https://chat-platform-irz7.onrender.com/log-in', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

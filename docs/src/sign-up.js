@@ -8,7 +8,7 @@ document.getElementById('signUpForm').addEventListener('submit', async (e) => {
     email: formData.get('email'),
   };
 
-  const response = await fetch('http://localhost:3000/sign-up', {
+  const response = await fetch('https://chat-platform-irz7.onrender.com/sign-up', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

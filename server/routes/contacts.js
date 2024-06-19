@@ -71,8 +71,8 @@ router.post(
       `SELECT * FROM friends WHERE from_user=$1 AND to_user=$2`,
       [myId, targetId]
     );
-    if (alreadyFriend) {
-      return res.json('Failed request, already friends');
+    if (alreadyFriend.rows.length > 0) {
+      return res.status(404).json('Failed request, already friends');
     }
     await db.query(
       `INSERT INTO friend_requests (sender_id, receiver_id) VALUES( $1, $2)`,

@@ -26,7 +26,6 @@ require('./socket.js')
 // Enable CORS with options
 app.use(
   cors({
-    // origin: 'http://localhost:8080', // Allow requests from this origin
     origin: '*'
   })
 );

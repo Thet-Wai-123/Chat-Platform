@@ -24,6 +24,6 @@ document.getElementById('signInForm').addEventListener('submit', async (e) => {
       throw error('Invalid credentials');
     }
   } catch (error) {
-    console.error('Error:', error);
+    alert('Invalid credentials');
   }
 });

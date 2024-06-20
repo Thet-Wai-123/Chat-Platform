@@ -11,7 +11,7 @@ export function initializeSocket(token, groupId) {
     options.query = { groupId: `${groupId}` };
   }
 
-  const socket = io('https://chat-platform-irz7.onrender.com:443', options);
+  const socket = io('https://chat-platform-irz7.onrender.com', options);
 
   // Debugging connection issues
   socket.on('connect', () => {

@@ -1,7 +1,7 @@
 const passport = require('./authentication/passport.js');
-
-const io = require('socket.io')(443, {
-  cors: {
+const { server } = require('./app');
+const io = require('socket.io')(server, {
+    cors: {
     origin: '*',
   },
 });
